@@ -1,0 +1,279 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #0b0f14;
+  color: white;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 30px;
+  max-width: 1000px;
+  margin: auto;
+}
+
+/* HEADER */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px;
+  background: #111820;
+  border: 1px solid #26313d;
+  border-radius: 15px;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  font-size: 30px;
+  letter-spacing: 2px;
+}
+
+.header p {
+  color: #7f8b99;
+  margin-top: 6px;
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #aeb8c4;
+}
+
+.status span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #35d07f;
+  box-shadow: 0 0 10px #35d07f;
+}
+
+/* MODE */
+
+.mode,
+.panel {
+  background: #111820;
+  border: 1px solid #26313d;
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 25px;
+}
+
+.mode h2,
+.panel h2 {
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: #8d99a6;
+  margin-bottom: 20px;
+}
+
+.modeButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.modeButtons button {
+  flex: 1;
+  padding: 15px;
+  border: 1px solid #34404d;
+  border-radius: 10px;
+  background: #171f28;
+  color: #aeb8c4;
+  font-weight: bold;
+}
+
+.modeButtons button.active {
+  background: white;
+  color: #0b0f14;
+}
+
+/* MANUAL CONTROL */
+
+.controls {
+  text-align: center;
+}
+
+.controls button {
+  width: 150px;
+  height: 60px;
+  margin: 7px;
+  border: 1px solid #34404d;
+  border-radius: 12px;
+  background: #18212b;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  transition: 0.15s;
+}
+
+.controls button:hover {
+  background: #26323e;
+  transform: translateY(-2px);
+}
+
+.controls button:active {
+  transform: scale(0.95);
+}
+
+.middle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.controls .stop {
+  background: #d63b3b;
+  border-color: #e04b4b;
+}
+
+.controls .stop:hover {
+  background: #ec4747;
+}
+
+/* VOICE */
+
+.voice {
+  text-align: center;
+  min-height: 350px;
+}
+
+.mic {
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  border: 2px solid #3c4855;
+  background: #18212b;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  transition: 0.2s;
+}
+
+.mic:hover {
+  transform: scale(1.03);
+  background: #202b36;
+}
+
+.mic:active {
+  transform: scale(0.97);
+}
+
+.mic.listening {
+  border-color: white;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.25);
+  animation: pulse 1s infinite;
+}
+
+.mic:disabled {
+  cursor: wait;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.06);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* VOICE INFO */
+
+.voiceInfo {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  margin-top: 35px;
+}
+
+.voiceInfo div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.voiceInfo small {
+  color: #737f8c;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.voiceInfo strong {
+  font-size: 18px;
+}
+
+.voice p {
+  margin-top: 25px;
+  color: #737f8c;
+  font-size: 13px;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+  .app {
+    padding: 15px;
+  }
+
+  .header {
+    padding: 18px;
+  }
+
+  .header h1 {
+    font-size: 22px;
+  }
+
+  .header p {
+    font-size: 10px;
+  }
+
+  .status {
+    font-size: 10px;
+  }
+
+  .mode,
+  .panel {
+    padding: 18px;
+  }
+
+  .controls button {
+    width: 120px;
+    height: 55px;
+    font-size: 13px;
+  }
+
+  .middle {
+    flex-wrap: nowrap;
+  }
+
+  .mic {
+    width: 160px;
+    height: 160px;
+  }
+
+  .voiceInfo {
+    gap: 30px;
+  }
+}
