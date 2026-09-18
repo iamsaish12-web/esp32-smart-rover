@@ -1,5 +1,29 @@
+```jsx
 import { useState } from "react";
 import "./App.css";
+
+// Local:
+// /api/...    -> Vite proxy -> ESP32
+// /voice      -> Vite proxy -> FastAPI
+//
+// Vercel:
+// /rover/...  -> Cloudflare -> FastAPI -> ESP32
+// /voice      -> Cloudflare -> FastAPI
+
+const CLOUD_API =
+  "https://otherwise-home-intensive-paul.trycloudflare.com";
+
+const isLocal =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+
+async function sendRoverCommand(cmd) {
+  const url = isLocal
+    ? `/api/${cmd}`
+    : `${CLOUD_API}/rover/${cmd}`;
+
+  return fetch(url);
+}
 
 function App() {
   const [mode, setMode] = useState("manual");
@@ -7,33 +31,39 @@ function App() {
   const [command, setCommand] = useState("STOP");
   const [listening, setListening] = useState(false);
 
-  // Send command to ESP32
   async function sendCommand(cmd) {
     try {
-      const response = await fetch(`/api/${cmd}`);
+      setStatus("CONNECTING...");
 
-      if (response.ok) {
+      const response = await sendRoverCommand(cmd);
+      const data = await response.json();
+
+      if (
+        response.ok &&
+        (isLocal || data.success)
+      ) {
         setCommand(cmd.toUpperCase());
         setStatus("CONNECTED");
       } else {
         setStatus("ESP32 ERROR");
       }
+
     } catch (error) {
+      console.error(error);
       setStatus("ESP32 OFFLINE");
     }
   }
 
-  // Manual control
   function manualCommand(cmd) {
     sendCommand(cmd);
   }
 
-  // Voice control
   async function startVoice() {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
 
       const recorder = new MediaRecorder(stream);
       const audioChunks = [];
@@ -43,16 +73,19 @@ function App() {
       };
 
       recorder.onstop = async () => {
-        // Stop microphone
-        stream.getTracks().forEach((track) => track.stop());
+        stream
+          .getTracks()
+          .forEach((track) => track.stop());
 
         setListening(false);
         setStatus("PROCESSING...");
 
-        // Create audio file
-        const audioBlob = new Blob(audioChunks, {
-          type: "audio/webm",
-        });
+        const audioBlob = new Blob(
+          audioChunks,
+          {
+            type: "audio/webm",
+          }
+        );
 
         const formData = new FormData();
 
@@ -63,21 +96,36 @@ function App() {
         );
 
         try {
-          // Send audio to Whisper server
-          const response = await fetch("/voice", {
-            method: "POST",
-            body: formData,
-          });
+          const voiceURL = isLocal
+            ? "/voice"
+            : `${CLOUD_API}/voice`;
+
+          const response = await fetch(
+            voiceURL,
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
 
           const data = await response.json();
 
-          console.log("Whisper result:", data);
+          console.log(
+            "Whisper result:",
+            data
+          );
 
           if (data.command) {
-            setCommand(data.command.toUpperCase());
+            setCommand(
+              data.command.toUpperCase()
+            );
+
             setStatus("CONNECTED");
           } else {
-            setCommand(data.text || "NO SPEECH");
+            setCommand(
+              data.text || "NO SPEECH"
+            );
+
             setStatus("UNKNOWN COMMAND");
           }
 
@@ -87,13 +135,11 @@ function App() {
         }
       };
 
-      // Start recording
       recorder.start();
 
       setListening(true);
       setStatus("LISTENING...");
 
-      // Record for 3 seconds
       setTimeout(() => {
         recorder.stop();
       }, 3000);
@@ -108,8 +154,6 @@ function App() {
 
   return (
     <div className="app">
-
-      {/* HEADER */}
 
       <header className="header">
 
@@ -126,8 +170,6 @@ function App() {
       </header>
 
 
-      {/* MODE */}
-
       <section className="mode">
 
         <h2>CONTROL MODE</h2>
@@ -135,15 +177,27 @@ function App() {
         <div className="modeButtons">
 
           <button
-            className={mode === "manual" ? "active" : ""}
-            onClick={() => setMode("manual")}
+            className={
+              mode === "manual"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setMode("manual")
+            }
           >
             MANUAL
           </button>
 
           <button
-            className={mode === "voice" ? "active" : ""}
-            onClick={() => setMode("voice")}
+            className={
+              mode === "voice"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setMode("voice")
+            }
           >
             VOICE
           </button>
@@ -152,8 +206,6 @@ function App() {
 
       </section>
 
-
-      {/* MANUAL */}
 
       {mode === "manual" && (
 
@@ -164,7 +216,9 @@ function App() {
           <div className="controls">
 
             <button
-              onClick={() => manualCommand("forward")}
+              onClick={() =>
+                manualCommand("forward")
+              }
             >
               FORWARD
             </button>
@@ -172,20 +226,26 @@ function App() {
             <div className="middle">
 
               <button
-                onClick={() => manualCommand("left")}
+                onClick={() =>
+                  manualCommand("left")
+                }
               >
                 LEFT
               </button>
 
               <button
                 className="stop"
-                onClick={() => manualCommand("stop")}
+                onClick={() =>
+                  manualCommand("stop")
+                }
               >
                 STOP
               </button>
 
               <button
-                onClick={() => manualCommand("right")}
+                onClick={() =>
+                  manualCommand("right")
+                }
               >
                 RIGHT
               </button>
@@ -193,7 +253,9 @@ function App() {
             </div>
 
             <button
-              onClick={() => manualCommand("backward")}
+              onClick={() =>
+                manualCommand("backward")
+              }
             >
               BACKWARD
             </button>
@@ -205,8 +267,6 @@ function App() {
       )}
 
 
-      {/* VOICE */}
-
       {mode === "voice" && (
 
         <section className="panel voice">
@@ -215,7 +275,9 @@ function App() {
 
           <button
             className={`mic ${
-              listening ? "listening" : ""
+              listening
+                ? "listening"
+                : ""
             }`}
             onClick={startVoice}
             disabled={listening}
@@ -228,19 +290,30 @@ function App() {
           <div className="voiceInfo">
 
             <div>
-              <small>LAST COMMAND</small>
-              <strong>{command}</strong>
+              <small>
+                LAST COMMAND
+              </small>
+
+              <strong>
+                {command}
+              </strong>
             </div>
 
             <div>
-              <small>STATUS</small>
-              <strong>{status}</strong>
+              <small>
+                STATUS
+              </small>
+
+              <strong>
+                {status}
+              </strong>
             </div>
 
           </div>
 
           <p>
-            Say: forward, backward, left, right or stop
+            Say: forward, backward, left,
+            right or stop
           </p>
 
         </section>
@@ -252,3 +325,4 @@ function App() {
 }
 
 export default App;
+```
